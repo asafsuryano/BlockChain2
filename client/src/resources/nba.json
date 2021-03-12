@@ -1,0 +1,97 @@
+{
+  "players":
+ [
+  {
+ "name":"Luka Doncic ",
+ "rebounds":"8",
+  "asists":"9",
+  "points":"28",
+  "steals":"1",
+  "blocks":"1",
+  "price":"10"
+  },
+  {
+    "name":"Donovan Mitchell ",
+    "rebounds":"5",
+     "asists":"5",
+     "points":"24",
+     "steals":"1",
+     "blocks":"0",
+     "price":"9"
+  },
+  {
+    "name":"Demar Derozan ",
+    "rebounds":"5",
+     "asists":"7",
+     "points":"20",
+     "steals":"1",
+     "blocks":"0",
+    "price":"11"
+  },
+  {
+    "name":"Bradely Beal ",
+    "rebounds":"5",
+     "asists":"5",
+     "points":"32",
+     "steals":"2",
+     "blocks":"0",
+  "price":"6"
+  },
+  {
+    "name":"Lebron James ",
+    "rebounds":"8",
+     "asists":"8",
+     "points":"25",
+     "steals":"1",
+     "blocks":"1",
+  "price":"20"
+  },
+  {
+    "name":"Steven Adams ",
+    "rebounds":"9",
+     "asists":"2",
+     "points":"8",
+     "steals":"1",
+     "blocks":"0",
+  "price":"7"
+  },
+  {
+    "name":"Joe Harris ",
+    "rebounds":"3",
+     "asists":"2",
+     "points":"14",
+     "steals":"1",
+     "blocks":"0",
+  "price":"4"
+  },
+  {
+    "name":"Nikola Vucevic ",
+    "rebounds":"12",
+     "asists":"4",
+     "points":"25",
+     "steals":"1",
+     "blocks":"1",
+  "price":"17"
+  },
+  {
+    "name":"Myles Turner ",
+    "rebounds":"7",
+     "asists":"1",
+     "points":"14",
+     "steals":"1",
+     "blocks":"4",
+  "price":"6"
+  },
+  {
+    "name":"Justin Holiday ",
+    "rebounds":"4",
+     "asists":"2",
+     "points":"12",
+     "steals":"1",
+     "blocks":"0",
+  "price":"4"
+  }
+  
+  
+ ]
+}
