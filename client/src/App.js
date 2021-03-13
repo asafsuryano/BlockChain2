@@ -222,6 +222,11 @@ class App extends React.Component {
       this.contract=instance;
       this.accounts=accounts;
       this.web3=web3;
+      for (let i=0;i<PlayersInfo.players.length;i++){
+        this.contract2.methods.createPlayer(PlayersInfo.players[i].name,PlayersInfo.players[i].rebounds,
+          PlayersInfo.players[i].asists,PlayersInfo.players[i].points,PlayersInfo.players[i].blocks,
+          PlayersInfo.players[i].steals).send({from:this.accounts[0]});
+      }
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance }, await this.runExample);
@@ -267,11 +272,10 @@ class App extends React.Component {
   }
   async createGamble(chosenPlayers){
     for (let i=0;i<chosenPlayers.length;i++){
-      await this.contract2.methods.addPlayerToUser(this.state.userLoggedIn,chosenPlayers[i].name,
-        chosenPlayers[i].rebounds,chosenPlayers[i].asists,chosenPlayers[i].points,
-        chosenPlayers[i].blocks,chosenPlayers[i].steals,chosenPlayers[i].price).send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
+      await this.contract2.methods.addPlayerToUser(this.state.userLoggedIn,chosenPlayers[i].name)
+      .send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
     }
-    await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'6000000',gasPrice:'0'});
+    await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
     this.setState({loggedIn:true,pickBPlayer:false});
   }
   async getGamblesInfo(){
