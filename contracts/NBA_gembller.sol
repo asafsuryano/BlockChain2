@@ -17,14 +17,14 @@ contract NBA_gembller{
       uint points;
       uint blocks;
       uint steals;
-      uint price;
+
     }
     
     
   struct  UserGamble{
         User user;
         BPlayer []  players;
-        uint gambleSum; 
+        uint gambleAmount; 
         uint initialPrice;
         bool valid;
     }
@@ -39,7 +39,9 @@ contract NBA_gembller{
 
       uint GamblingBattleNum;
       User [] public userWhoWantToGambller;
+      uint  numberOfPlayers=2;
       mapping(string => UserGamble)  userGambles;
+       mapping(string => BPlayer)  players;
       mapping(string => User) usersMapping;
       mapping(uint => GamblingBattle) gamblingBattles;
       mapping(string => bool) userExists;
@@ -51,13 +53,14 @@ contract NBA_gembller{
         
 
       constructor() public {
+        
         GamblingBattleNum=0;
         userWaits_0.valid=false;
         userWaits_500.valid=false;
         userWaits_1000.valid=false;
         userWaits_0.initialPrice=0;
-        userWaits_500.initialPrice=0;
-        userWaits_1000.initialPrice=0;
+        userWaits_500.initialPrice=500;
+        userWaits_1000.initialPrice=1000;
       } 
       
       //return true if the user exsist and the password is correct 
@@ -74,34 +77,43 @@ contract NBA_gembller{
         usersMapping[username]=_user;
         userExists[_user.username] = true;  
         }
+     
 
-    function addPlayerToUser(string memory username, string memory playerName,
-    uint rebounds,uint asists,uint points ,uint blocks,uint steals,uint price) public 
+    function createPlayer( string memory _playerName,
+    uint _rebounds,uint _asists,uint _points ,uint _blocks,uint _steals) public {
+      BPlayer memory _player=BPlayer(_playerName,_rebounds,_asists,_points,_blocks,_steals);
+      players[_playerName]=_player;
+    }
+
+
+    function addPlayerToUser(string memory _username,string memory  _playerName) public 
       {
-      BPlayer memory _player=BPlayer(playerName,rebounds,asists,points,blocks,steals,price);
-      userGambles[username].players.push(_player);
+       BPlayer memory _player=players[_playerName];
+      userGambles[_username].players.push(_player);
 
       }
-    function addUserGambling(string memory username,uint _initalPrice) public  {        
-          userGambles[username].initialPrice=_initalPrice;
-          userGambles[username].valid=true;
-          User memory _user=usersMapping[username];
-          //userGambles[username].gambleSum=calculateGamblePriceWinner();
-          if(userGambles[username].initialPrice==userWaits_0.initialPrice){
+    function addUserGambling(string memory _username,uint _initialPrice) public  {        
+          userGambles[_username].initialPrice=_initialPrice;
+          userGambles[_username].valid=true;
+          User memory _user=usersMapping[_username];
+          userGambles[_username].user=_user;
+          userGambles[_username].gambleAmount=calculateGamblePriceWinner(_initialPrice, _username);       
+
+          if(userGambles[_username].initialPrice==userWaits_0.initialPrice){
                if (userWaits_0.valid==false){
                userWaits_0=userGambles[_user.username];
           }else{
              createBattle(_user.username);
            }
-
-          }else if(userGambles[username].initialPrice==userWaits_500.initialPrice){
+          
+          }else if(userGambles[_username].initialPrice==userWaits_500.initialPrice){
             if (userWaits_500.valid==false){
                userWaits_500=userGambles[_user.username];
           }else{
              createBattle(_user.username);
            }
-          
-          
+        
+
           }else{
             if (userWaits_1000.valid==false){
                userWaits_1000=userGambles[_user.username];
@@ -109,7 +121,8 @@ contract NBA_gembller{
              createBattle(_user.username);
           }
         }
-    }
+     }
+    
       function createBattle(string memory userName)public  {    
         gamblingBattles[GamblingBattleNum].userGamble1= userGambles[userName];  //get the userGamble1
         if ( gamblingBattles[GamblingBattleNum].userGamble1.initialPrice==0){
@@ -133,9 +146,77 @@ contract NBA_gembller{
           userNameToBattle[userWaits_1000.user.username].push(GamblingBattleNum);
           GamblingBattleNum+=1;
         }
-
       }
-      function getGamblingBattle(string memory username)public view returns(GamblingBattle[] memory){
+      
+    function calculateGamblePriceWinner(uint _price,string memory _username)public view returns(uint){
+      UserGamble storage _userGamble=userGambles[_username];
+       uint sum=0;
+      //check if there is length function of the array
+     
+      for (uint i=0;i<numberOfPlayers;i++){
+       sum+=calculataPlayerSum(_userGamble.players[i]);
+      }      
+      return sum+_price;
+      
+    }
+    
+
+    function calculataPlayerSum(BPlayer memory player) public view returns(uint)
+    {
+    
+       uint priceOfPlayer=player.rebounds*10+player.points*5+player.steals*15+player.blocks*15
+       +player.asists*10;
+       return priceOfPlayer;
+      
+    }
+          
+      
+      function calculateDayStatisticsOfPlayer(uint gambllerNum,uint battleNum,uint rebounds,uint asists,uint points ,
+      uint blocks,uint steals) public 
+      {
+        GamblingBattle storage  battle = gamblingBattles[battleNum];
+        uint score= rebounds*5+asists *5 +points *10 +blocks* 7+steals *8;
+        if (gambllerNum==1){
+          battle.scoreUserGamble1+=score; 
+        }else{
+           battle.scoreUserGamble2+=score; 
+        }
+      }
+      
+
+      function winner(uint battleNum) public view returns(UserGamble memory,bool,UserGamble memory,bool)
+      {
+        GamblingBattle storage  battle = gamblingBattles[battleNum];
+         if(battle.scoreUserGamble1>battle.scoreUserGamble2){
+           return (battle.userGamble1,true,battle.userGamble2,false);
+         }else if(battle.scoreUserGamble1< battle.scoreUserGamble2){
+           return (battle.userGamble1,false,battle.userGamble2,true);
+         }
+           return (battle.userGamble1,false,battle.userGamble2,false);     
+       }
+
+   function updateStatisticOfPlayer(string memory _playerName,
+    uint _rebounds,uint _asists,uint _points ,uint _blocks,uint _steals,uint _price) public {
+     
+      players[_playerName].rebounds+=_rebounds;
+      players[_playerName].asists+=_asists;
+      players[_playerName].points+=_points;
+      players[_playerName].blocks+=_blocks;
+      players[_playerName].steals+=_steals;
+      
+    }
+
+    //------just for test-----
+    
+    function getPlayer(string  memory _playername) public view returns(BPlayer memory ){
+     return players[_playername];
+    }
+     function getUserGambllerByUserName(string memory _username)public view returns(UserGamble memory){
+
+          UserGamble memory _userGamble= userGambles[_username];
+          return _userGamble;
+    }
+     function getGamblingBattle(string memory username)public view returns(GamblingBattle[] memory){
         
         uint[] memory gamblingNumbers=userNameToBattle[username];
         GamblingBattle[] memory battles=new GamblingBattle[](gamblingNumbers.length);
@@ -146,51 +227,4 @@ contract NBA_gembller{
       }
 
     
-    function calculateGamblePriceWinner(uint _price,string memory _username)public view returns(uint){
-      UserGamble storage userGamble=userGambles[_username];
-      //check if there is length function of the array
-      uint sum=0;
-      for (uint i=0;i<5;i++){
-       sum=sum+calculataPlayerSum(userGamble.players[i]);
-      }
-      return sum+_price;
-    }
-    
-    function calculataPlayerSum(BPlayer memory player) public view returns(uint)
-    {
-       uint priceOfPlayer=player.rebounds*10+player.points*5+player.steals*15+player.blocks*15
-       +player.asists*10;
-       return priceOfPlayer;
-    }
-     function getUserGambllerByUserName(string memory username)public view returns(UserGamble memory){
-          return userGambles[username];
-    }
-   
-      
-      
-      function calculateDayStatisticsOfPlayer(uint gambllerNum,uint battleNum,uint rebounds,uint asists,uint points ,
-      uint blocks,uint steals) public 
-      {
-        GamblingBattle storage  battle = gamblingBattles[battleNum];
-        uint score= rebounds*5+asists *5 +points *10 +blocks* 7+steals *8;
-        if (gambllerNum==1){
-          //battle.scoreUserGamble1+=score; 
-        }else{
-           //battle.scoreUserGamble2+=score; 
-        }
-      }
-      
-
-      function winner(uint battleNum) public view returns(UserGamble memory,bool)
-      {
-        GamblingBattle storage  battle = gamblingBattles[battleNum];
-         if(battle.scoreUserGamble1>battle.scoreUserGamble2){
-           return (battle.userGamble1,true);
-         }else if(battle.scoreUserGamble1< battle.scoreUserGamble2){
-           return (battle.userGamble2,true);
-         }
-           return (battle.userGamble1,false);     
-       }
-
-    }
-    //function updatePlayerDetails
+}
