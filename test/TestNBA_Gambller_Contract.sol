@@ -10,8 +10,6 @@ contract TestNBA_Gambller_Contract {
      
     //nba_gambller.register("niv", "naory", "12");
     //nba_gambller.register("niv", "naory", "12");
-    
-    
     /*
     NBA_gembller.set(89);
 

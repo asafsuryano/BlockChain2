@@ -32,9 +32,7 @@ contract("NBA_gambller", accounts => {
      //add players to user 2
      await nba_gambller.addPlayerToUser("suryano","dwyane wade", { from: accounts[1] });
      await nba_gambller.addPlayerToUser("suryano","Myles turner", { from: accounts[1] });
-     //var player1=await nba_gambller.getPlayer("Myles turner");
-     //var player2=await nba_gambller.getPlayer("Myles turner");
-     //console.log(player1);
+     
      
 
     await nba_gambller.addUserGambling("naory",0, { from: accounts[0] });
@@ -45,21 +43,32 @@ contract("NBA_gambller", accounts => {
    var userGamble1=await nba_gambller.getUserGambllerByUserName("naory", { from: accounts[0] });
    var userGamble2=await nba_gambller.getUserGambllerByUserName("suryano", { from: accounts[1] });
    
+
    var battle=await nba_gambller.getGamblingBattle("naory", { from: accounts[0] });
-   console.log(battle);
-    // await nba_gambller.createPlayer ("luka doncic", 7,9,25 ,3,4,60, { from: accounts[0] });
-    // var player=await nba_gambller.getPlayer("luka doncic");
+    
+
+
+    //for player 1
+   await nba_gambller.calculateDayStatisticsOfPlayer(1,1,7,3,25,
+    2,1,{ from: accounts[0] });
+
+    await nba_gambller.calculateDayStatisticsOfPlayer(1,1,7,3,25,
+    2,4,{ from: accounts[0] });
+
+
+    //for player 
+    await nba_gambller.calculateDayStatisticsOfPlayer(2,1,7,3,25,
+    2,3,{ from: accounts[0] });
+
+    await nba_gambller.calculateDayStatisticsOfPlayer(2,1,7,3,25,
+    2,5,{ from: accounts[0] });
+    
+    var winner=await nba_gambller.winner(1,{ from: accounts[0] });
    
-    //await nba_gambller.updateStatisticOfPlayer("luka doncic", 1,1,3,1,0,5, { from: accounts[0] });
-    // var player1=await nba_gambller.getPlayer("luka doncic");
-
-
-
-  
-
-    // Get stored value
-  //  const storedData = await simpleStorageInstance.get.call();
-
-    //assert.equal(storedData, 89, "The value 89 was not stored.");
+    if (winner[1]==true){
+      console.log(winner[0]);
+    }else{
+      console.log(winner[2]);
+    }
   });
 });
