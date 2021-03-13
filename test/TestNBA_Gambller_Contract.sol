@@ -8,7 +8,7 @@ contract TestNBA_Gambller_Contract {
   function testItStoresAValue() public {
     NBA_gembller nba_gambller = NBA_gembller(DeployedAddresses.NBA_gembller());
      
-   // nba_gambller.register("niv", "naory", "12");
+    //nba_gambller.register("niv", "naory", "12");
     //nba_gambller.register("niv", "naory", "12");
     
     
