@@ -14,7 +14,7 @@ contract NBA_gembller{
       string name;
       uint rebounds;
       uint asists;
-      uint pointes;
+      uint points;
       uint blocks;
       uint steals;
       uint price;
@@ -29,12 +29,14 @@ contract NBA_gembller{
         bool valid;
     }
     
+   
     struct GamblingBattle{
         UserGamble userGamble1;
         UserGamble userGamble2;
-        //DATE;
-        //uint daysPassed; 
-     }
+        uint scoreUserGamble1;
+        uint scoreUserGamble2;
+    }
+
       uint GamblingBattleNum;
       User [] public userWhoWantToGambller;
       mapping(string => UserGamble)  userGambles;
@@ -58,11 +60,12 @@ contract NBA_gembller{
         userWaits_1000.initialPrice=0;
       } 
       
-          
-      function login(string memory username) public view returns (bool)  {
-         return userExists[username];
-         //just send message to client that user exsist.
-         //retrun the user
+      //return true if the user exsist and the password is correct 
+      function login(string memory _username,string memory _password) public view returns (bool)  {
+         User memory _user=usersMapping[_username];
+         require(keccak256(abi.encodePacked((_user.password))) == keccak256(abi.encodePacked((_password))),"password is not correct ");
+         return userExists[_username];
+         
         }
        
       function register(string memory firtsName,string  memory username,string  memory password) public  {
@@ -73,9 +76,9 @@ contract NBA_gembller{
         }
 
     function addPlayerToUser(string memory username, string memory playerName,
-    uint rebounds,uint asists,uint point ,uint blocks,uint steals,uint price) public 
+    uint rebounds,uint asists,uint points ,uint blocks,uint steals,uint price) public 
       {
-      BPlayer memory _player=BPlayer(playerName,rebounds,asists,point,blocks,steals,price);
+      BPlayer memory _player=BPlayer(playerName,rebounds,asists,points,blocks,steals,price);
       userGambles[username].players.push(_player);
 
       }
@@ -141,4 +144,53 @@ contract NBA_gembller{
         }
         return battles;
       }
+
+    
+    function calculateGamblePriceWinner(uint _price,string memory _username)public view returns(uint){
+      UserGamble storage userGamble=userGambles[_username];
+      //check if there is length function of the array
+      uint sum=0;
+      for (uint i=0;i<5;i++){
+       sum=sum+calculataPlayerSum(userGamble.players[i]);
+      }
+      return sum+_price;
     }
+    
+    function calculataPlayerSum(BPlayer memory player) public view returns(uint)
+    {
+       uint priceOfPlayer=player.rebounds*10+player.points*5+player.steals*15+player.blocks*15
+       +player.asists*10;
+       return priceOfPlayer;
+    }
+     function getUserGambllerByUserName(string memory username)public view returns(UserGamble memory){
+          return userGambles[username];
+    }
+   
+      
+      
+      function calculateDayStatisticsOfPlayer(uint gambllerNum,uint battleNum,uint rebounds,uint asists,uint points ,
+      uint blocks,uint steals) public 
+      {
+        GamblingBattle storage  battle = gamblingBattles[battleNum];
+        uint score= rebounds*5+asists *5 +points *10 +blocks* 7+steals *8;
+        if (gambllerNum==1){
+          //battle.scoreUserGamble1+=score; 
+        }else{
+           //battle.scoreUserGamble2+=score; 
+        }
+      }
+      
+
+      function winner(uint battleNum) public view returns(UserGamble memory,bool)
+      {
+        GamblingBattle storage  battle = gamblingBattles[battleNum];
+         if(battle.scoreUserGamble1>battle.scoreUserGamble2){
+           return (battle.userGamble1,true);
+         }else if(battle.scoreUserGamble1< battle.scoreUserGamble2){
+           return (battle.userGamble2,true);
+         }
+           return (battle.userGamble1,false);     
+       }
+
+    }
+    //function updatePlayerDetails
