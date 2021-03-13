@@ -10,7 +10,7 @@ class BPlayer extends React.Component{
     super(props);
     this.playerStats={name:this.props.info.name,rebounds:this.props.info.rebounds,asists:this.props.info.asists,
       points:this.props.info.points,steals:this.props.info.steals,blocks:this.props.info.blocks,price:this.props.info.price};
-    this.state={chosen:false};
+    this.state={chosen:this.props.chosen};
   }
   render () {
     if (!this.state.chosen){
@@ -25,9 +25,9 @@ class BPlayer extends React.Component{
           <li>{"blocks: " + this.playerStats.blocks}</li>
           <li>{"price: " + this.playerStats.price}</li>
           <button onClick={()=>{
-            this.props.add(this.playerStats);
-            if (this.props.canChoose){
-              this.setState({chosen:!this.state.chosen});
+            let ans=this.props.add(this.playerStats);
+            if (ans==true){
+            this.setState({chosen:!this.state.chosen});
             }
           }}>Choose this Player</button>
         </ul>     
@@ -45,8 +45,8 @@ class BPlayer extends React.Component{
           <li>{"blocks: "+this.playerStats.blocks}</li>
           <li>{"price: "+this.playerStats.price}</li>
           <button onClick={()=>{
-              this.props.remove(this.playerStats);
-            this.setState({chosen:!this.state.chosen});
+          this.props.remove(this.playerStats);
+          this.setState({chosen:!this.state.chosen});
           }}>remove player</button>
         </ul>     
       </div>
@@ -63,18 +63,24 @@ class BPlayerList extends React.Component{
     this.state={chose_5:false};
     this.addPlayer=this.addPlayer.bind(this);
     this.removePlayer=this.removePlayer.bind(this);
+    this.getIndexOfPlayerByName=this.getIndexOfPlayerByName.bind(this);
+    this.getIndexOfChosenPlayerByName=this.getIndexOfChosenPlayerByName.bind(this);
   }
   addPlayer(BPlayerState){
     if (this.chosenPlayers.length<6){
       this.chosenPlayers.push(BPlayerState);
-      this.players.splice(this.players.indexOf(BPlayerState),1);
+      let index=this.getIndexOfPlayerByName(BPlayerState.name);
+      this.players.splice(index,1);
       if (this.chosenPlayers.length >= 5){
         this.setState({chose_5:true});
       }
+      return true;
+    }else{
+      return false;
     }
   }
   removePlayer(BPlayerState){
-    let index=this.chosenPlayers.indexOf(BPlayerState);
+    let index=this.getIndexOfChosenPlayerByName(BPlayerState.name);
     if (index > -1){
     let player=this.chosenPlayers[index];
     this.players.push(player);
@@ -89,23 +95,44 @@ class BPlayerList extends React.Component{
       this.players.push(PlayersInfo.players[i]);
     }
   }
+  getIndexOfPlayerByName(name){
+    for (let i=0;i<this.players.length;i++){
+        if (this.players[i].name==name){
+          return i;
+        }
+    }
+    return -1;
+  }
+  getIndexOfChosenPlayerByName(name){
+    for (let i=0;i<this.chosenPlayers.length;i++){
+      if (this.chosenPlayers[i].name==name){
+        return i;
+      }
+    }
+    return -1;
+  }
   render(){
     if (!this.state.chose_5){
       return(
         <div>
           {this.players.map(element=>(
-            <BPlayer key={element.name} canChoose={true} info={element} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
+            <BPlayer key={element.name} chosen={false} info={element} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
           ))}
+          {
+            this.chosenPlayers.map(element=>(
+            <BPlayer key={element.name} chosen={true} info={element} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
+            ))}
         </div>
       );
     }else{
       return(
         <div>
-        {
-          this.players.map(element=>(
-            <BPlayer key={element.name} info={element} canChoose={false} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
-          ))
-        }
+          {this.players.map(element=>(
+            <BPlayer key={element.name} chosen={false} info={element} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
+          ))}
+          { this.chosenPlayers.map(element=>(
+            <BPlayer key={element.name} chosen={true} info={element} add={this.addPlayer} remove={this.removePlayer}></BPlayer>
+          ))}
         <button onClick={()=>{this.props.confirm(this.chosenPlayers)}}>Confirm selection</button>
         </div>
       )
@@ -244,13 +271,13 @@ class App extends React.Component {
         chosenPlayers[i].rebounds,chosenPlayers[i].asists,chosenPlayers[i].points,
         chosenPlayers[i].blocks,chosenPlayers[i].steals,chosenPlayers[i].price).send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
     }
-    await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'5000000',gasPrice:'0'});
+    await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'6000000',gasPrice:'0'});
     this.setState({loggedIn:true,pickBPlayer:false});
   }
   async getGamblesInfo(){
     console.log();
     let ans=await this.contract2.methods.getGamblingBattle(this.state.userLoggedIn).call();
-    console.log();
+    console.log(ans);
   }
   renderBPlayerList(){
     this.setState({pickBPlayer:true});
