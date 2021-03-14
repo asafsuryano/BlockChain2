@@ -96,6 +96,7 @@ contract NBA_gembller{
 
     function addPlayerToUser(string memory _username,string memory  _playerName) public 
       {
+      // require(userGambles[_username].players.length < 5,"only 5 players is possible ");
        BPlayer memory _player=players[_playerName];
       userGambles[_username].players.push(_player);
 
@@ -147,6 +148,7 @@ contract NBA_gembller{
         userNameToBattle[userWaits_500.user.username].push(GamblingBattleNum);
         GamblingBattleNum+=1;
 
+
         }else{
           gamblingBattles[GamblingBattleNum].userGamble2= userWaits_1000;//get the usergamble2
           userWaits_1000.valid=false;
@@ -193,15 +195,19 @@ contract NBA_gembller{
       
 
 
-      function winner(uint battleNum) public view returns(bool,User memory,bool,User memory)
+      function winner(uint battleNum) public  returns(bool,User memory,bool,User memory)
       {
         GamblingBattle storage  battle = gamblingBattles[battleNum];
-         if(battle.scoreUserGamble1>battle.scoreUserGamble2){
+         delete battle.userGamble1.players;
+         delete battle.userGamble2.players;
+         if(battle.scoreUserGamble1>battle.scoreUserGamble2){  
            return (true,battle.userGamble1.user,false,battle.userGamble2.user);
          }else if(battle.scoreUserGamble1< battle.scoreUserGamble2){
+            
             return (false,battle.userGamble1.user,true,battle.userGamble2.user);
          }
-           return (false,battle.userGamble1.user,false,battle.userGamble2.user);     
+           return (false,battle.userGamble1.user,false,battle.userGamble2.user);    
+
        }
 
 
