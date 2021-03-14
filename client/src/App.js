@@ -5,6 +5,7 @@ import DappToken from "./contracts/DappToken.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import PlayersInfo from "./resources/nba.json";
+var accountCounter=0;
 
 class BPlayer extends React.Component{
   constructor(props){
@@ -262,6 +263,8 @@ class App extends React.Component {
     console.log(this.contract2);
     this.contract2.methods.register(firstname,username,password).send({from:this.accounts[0],gas:'300000',gasPrice:'0'});
     this.setState({storageValue:this.state.storageValue,register:false,login:false});
+    this.contract3.methods.addAddress().send({from:this.accounts[accountCounter]});
+    accountCounter++;
     console.log('registered');
   }
   mainPage(){
@@ -283,12 +286,12 @@ class App extends React.Component {
     this.setState({loggedIn:true,pickBPlayer:false});
   }
 
-  async transferToWinner(){
-    await this.contract3.methods.addAddress().send({from:this.accounts[1]});
-    let ans3=await this.contract3.methods.transfer(this.accounts[1],600).send(
-      {from:this.accounts[0],gas:'3000000'});
-    let ans=await this.contract3.methods.getBalance(this.accounts[1]).call();
-    let ans2=await this.contract3.methods.getBalance(this.accounts[0]).call();
+  async transferToWinner(winnerUsername,loserUsername){
+    let winnerAddress=this.contract2.methods.getUserAddressByUsername(winnerUsername).call();
+    let loserAddress=this.contract2.methods.getUserAddressByUsername(loserUsername).call();
+    let ansTransfer=await this.contract3.methods.transfer(winnerAddress,600).send(
+      {from:loserAddress,gas:'3000000'});
+    let ans=await this.contract3.methods.getBalance(winnerAddress).call();
     this.setState({balance:ans});
   }
 
