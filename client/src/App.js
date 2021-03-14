@@ -145,9 +145,23 @@ class BPlayerList extends React.Component{
   }
 }
 
-class PlayerInfo extends React.component
+class PlayerInfo extends React.component{
+  constructor(props){
+    super(props);
+  }
+  render(){
+    return(
+      <div>
+        <ul>
+          <li>{"Player name: "+this.props.info.name}</li>
+          <li>{"Price: "+this.props.info.price}</li>
+        </ul>
+      </div>
+    )
+  }
+}
 
-class gamblingInfo extends React.Component{
+class GamblingInfo extends React.Component{
   constructor(props){
     super(props);
   }
@@ -155,7 +169,11 @@ class gamblingInfo extends React.Component{
     return (
       <div>
         <button></button>
-        {this.props.info.map((element)=>)}
+        {this.props.info.map((element)=>(
+          <PlayerInfo info={element}></PlayerInfo>
+        ))}
+        <p>{"The price payed for this gamble is "+this.props.price}</p>
+        <p>{"You receive "+this.props.winRes}</p>
       </div>
     )
   }
@@ -327,7 +345,9 @@ class App extends React.Component {
     ans1=await this.contract2.methods.getGamblingBattle(Number(battleNumbers[i])).call();
     ans.push(ans1);
     }
-    this.setState({showGamblingInfo:true,gamblingInfo:ans});
+    return(
+      <GamblingInfo
+    );
   }
 
   renderBPlayerList(){
