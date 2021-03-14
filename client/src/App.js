@@ -5,7 +5,9 @@ import DappToken from "./contracts/DappToken.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import PlayersInfo from "./resources/nba.json";
+
 var accountCounter=0;
+
 
 class BPlayer extends React.Component{
   constructor(props){
@@ -143,6 +145,22 @@ class BPlayerList extends React.Component{
   }
 }
 
+class PlayerInfo extends React.component
+
+class gamblingInfo extends React.Component{
+  constructor(props){
+    super(props);
+  }
+  render(){
+    return (
+      <div>
+        <button></button>
+        {this.props.info.map((element)=>)}
+      </div>
+    )
+  }
+}
+
 class Login extends React.Component{
   constructor(props){
     super(props);
@@ -228,10 +246,12 @@ class App extends React.Component {
       this.accounts=accounts;
       this.web3=web3;
       for (let i=0;i<PlayersInfo.players.length;i++){
-        this.contract2.methods.createPlayer(PlayersInfo.players[i].name,PlayersInfo.players[i].rebounds,
+        await this.contract2.methods.createPlayer(PlayersInfo.players[i].name,PlayersInfo.players[i].rebounds,
           PlayersInfo.players[i].asists,PlayersInfo.players[i].points,PlayersInfo.players[i].blocks,
-          PlayersInfo.players[i].steals).send({from:this.accounts[0]});
+          PlayersInfo.players[i].steals).send({from:this.accounts[0],gas:'3000000'});
       }
+      let ans=await this.contract2.methods.getPlayer("Luka Doncic ").call();
+      console.log(ans);
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance }, await this.runExample);
@@ -278,11 +298,15 @@ class App extends React.Component {
     }
   }
   async createGamble(chosenPlayers){
+    let userAddress=await this.contract2.methods.getUserAddressByUsername(this.state.userLoggedIn).call();
     for (let i=0;i<chosenPlayers.length;i++){
       await this.contract2.methods.addPlayerToUser(this.state.userLoggedIn,chosenPlayers[i].name)
-      .send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
+      .send({from:userAddress,gas:'3000000',gasPrice:'0'});
     }
-    await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
+    let ans=await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:userAddress,gas:'3000000',gasPrice:'0'});
+    if (ans.status==true){
+      await this.contract2.methods.createBattle(this.state.userLoggedIn).send({from:userAddress,gas:'3000000'});
+    }
     this.setState({loggedIn:true,pickBPlayer:false});
   }
 
@@ -297,9 +321,15 @@ class App extends React.Component {
 
   async getGamblesInfo(){
     console.log();
-    let ans=await this.contract2.methods.getGamblingBattle(this.state.userLoggedIn).call();
-    console.log(ans);
+    let battleNumbers=await this.contract2.methods.getBattleNumbers(this.state.userLoggedIn).call();
+    let ans=[];
+    for (let i=0;i<battleNumbers.length;i++){
+    ans1=await this.contract2.methods.getGamblingBattle(Number(battleNumbers[i])).call();
+    ans.push(ans1);
+    }
+    this.setState({showGamblingInfo:true,gamblingInfo:ans});
   }
+
   renderBPlayerList(){
     this.setState({pickBPlayer:true});
   }
@@ -372,9 +402,18 @@ class App extends React.Component {
   if (this.state.pickBPlayer){
     return(
       <div>
+        <button onClick={()=>this.setState({pickBPlayer:!this.state.pickBPlayer})}>Back to main menu</button>
         <BPlayerList confirm={this.createGamble}></BPlayerList>
       </div>
-    )
+    );
+  }
+  if (this.state.showGamblingInfo){
+    return(
+      <div>
+        <button onClick={()=>this.setState({gamblingInfo})}></button>
+
+      </div>
+    );
   }
   }
 }

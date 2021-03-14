@@ -216,6 +216,9 @@ contract NBA_gembller{
       
     }
    
+   function getBattleNumbers(string memory username) public returns(uint [] memory){
+     return userNameToBattle[username];
+   }
 
 
    
