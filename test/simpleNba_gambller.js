@@ -28,6 +28,7 @@ contract("NBA_gambller", accounts => {
     //add playes to user 1
      await nba_gambller.addPlayerToUser ("naory","lebron james", { from: accounts[0] });
      await nba_gambller.addPlayerToUser ("naory","luca doncic", { from: accounts[0] });
+     
     
 
      //add players to user 2
@@ -48,8 +49,8 @@ contract("NBA_gambller", accounts => {
 
     await nba_gambller.createBattle("suryano");
     var battle= await nba_gambller.getGamblingBattle(1);
-    //console.log(battle.userGamble1);
-    //console.log(battle.userGamble2);
+    console.log(battle.userGamble1);
+    console.log(battle.userGamble2);
     
 
   
