@@ -38,39 +38,52 @@ contract("NBA_gambller", accounts => {
 
     await nba_gambller.addUserGambling("naory",0, { from: accounts[0] });
     await nba_gambller.addUserGambling("suryano",0, { from: accounts[1] });
+     
+
+   
 
 
+    //userGamble=await nba_gambller.getUserGambllerByUserName("suryano");
+    //console.log(userGamble);
 
-   await nba_gambller.createBattle("suryano" ,{ from: accounts[0] });
+    await nba_gambller.createBattle("suryano");
+    var battle= await nba_gambller.getGamblingBattle(1);
+    //console.log(battle.userGamble1);
+    //console.log(battle.userGamble2);
     
-    
-   var user= await nba_gambller.getUserGambllerByUserName("naory",{ from: accounts[0] });
-  
-    
+
   
 
 
    //for player 1
    await nba_gambller.calculateDayStatisticsOfPlayer(1,1,7,3,25,
-    2,1,{ from: accounts[0] });
+    2,3,{ from: accounts[0] });
 
    await nba_gambller.calculateDayStatisticsOfPlayer(1,1,7,3,25,
     2,4,{ from: accounts[0] });
 
     //for player 2
     await nba_gambller.calculateDayStatisticsOfPlayer(2,1,7,3,25,
-    2,3,{ from: accounts[0] });
+    2,1,{ from: accounts[0] });
 
     await nba_gambller.calculateDayStatisticsOfPlayer(2,1,7,3,25,
-    2,5,{ from: accounts[0] });
-
-    var winner=await nba_gambller.winner(1,{ from: accounts[0] });
+    2,4,{ from: accounts[0] });
    
-    if (winner[1]==true){
-      console.log(winner[0]);
+
+    battle=await nba_gambller.getGamblingBattle(1);
+    
+    
+
+
+
+    var winner=await nba_gambller.winner(1);
+   
+    if (winner[0]==true){
+      console.log(winner[1]);
     }else{
-      console.log(winner[2]);
+      console.log(winner[3]);
     }
+  
 
   });
 });
