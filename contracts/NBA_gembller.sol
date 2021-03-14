@@ -64,13 +64,13 @@ contract NBA_gembller{
         userWaits_500.initialPrice=500;
         userWaits_1000.initialPrice=1000;
       } 
-       function register(string memory _firtsName,string  memory _username,string  memory _password,address  _userAddress) public  {
-        User memory _user=User(_firtsName,_username,_password,_userAddress);
+       function register(string memory _firtsName,string  memory _username,string  memory _password) public  {
+        User memory _user=User(_firtsName,_username,_password,msg.sender);
         require(!userExists[_user.username],"user allready exsist");
         usersMapping[_username]=_user;
-        usersAddress[_userAddress]=_user;
+        usersAddress[msg.sender]=_user;
         userExists[_user.username] = true; 
-        userExistsWithAddress[_userAddress]=true; 
+        userExistsWithAddress[msg.sender]=true; 
         }
 
       //return true if the user exsist and the password is correct 
@@ -249,6 +249,9 @@ contract NBA_gembller{
       function getUserNameByAddress(address  _userAddress )public view returns(string memory)
       {
         return usersAddress[_userAddress].username;
+      }
+      function getUserAddressByUsername(string memory username) public view returns(address userAddress){
+        return usersMapping[username].userAddress;
       }
 
 }
