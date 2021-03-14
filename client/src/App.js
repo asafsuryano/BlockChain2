@@ -145,40 +145,6 @@ class BPlayerList extends React.Component{
   }
 }
 
-class PlayerInfo extends React.Component{
-  constructor(props){
-    super(props);
-  }
-  render(){
-    return(
-      <div>
-        <ul>
-          <li>{"Player name: "+this.props.info.name}</li>
-          <li>{"Price: "+this.props.info.price}</li>
-        </ul>
-      </div>
-    )
-  }
-}
-
-class GamblingInfo extends React.Component{
-  constructor(props){
-    super(props);
-  }
-  render(){
-    return (
-      <div>
-        <button></button>
-        {this.props.info.map((element)=>(
-          <PlayerInfo info={element}></PlayerInfo>
-        ))}
-
-        <p>{"The price payed for this gamble is "+this.props.price}</p>
-        <p>{"You receive "+this.props.winRes}</p>
-      </div>
-    )
-  }
-}
 
 class Login extends React.Component{
   constructor(props){
@@ -232,7 +198,7 @@ class Register extends React.Component{
 class App extends React.Component {
   constructor(props){
     super(props);
-    this.state={ loggedIn:false,storageValue: 0,register:false,login:false,balance:0};
+    this.state={ loggedIn:false,storageValue: 0,register:false,login:false,balance:0,winner:''};
     this.web3=null;
     this.accounts=null;
     this.contract=null;
@@ -244,6 +210,7 @@ class App extends React.Component {
     this.login=this.login.bind(this);
     this.createGamble=this.createGamble.bind(this);
     this.mainPage=this.mainPage.bind(this);
+    this.decideWinner=this.decideWinner.bind(this);
   }
   componentDidMount = async () => {
     try {
@@ -326,7 +293,9 @@ class App extends React.Component {
     this.isHaveRivel=await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:userAddress,gas:'3000000',gasPrice:'0'});
  
     if (this.isHaveRivel.status==true){
-      await this.contract2.methods.createBattle(this.state.userLoggedIn).send({from:userAddress,gas:'3000000'});
+      await this.contract2.methods.createBattle(this.state.userLoggedIn).send({from:userAddress,gas:'5000000'});
+      setTimeout(this.decideWinner,10000)
+
     }
     this.setState({loggedIn:true,pickBPlayer:false});
   }
@@ -337,24 +306,26 @@ class App extends React.Component {
     let ansTransfer=await this.contract3.methods.transfer(winnerAddress,600).send(
       {from:loserAddress,gas:'3000000'});
     let ans=await this.contract3.methods.getBalance(winnerAddress).call();
-    this.setState({balance:ans});
+    if (this.state.userLoggedIn==winnerUsername){
+      this.setState({winner:'you won the gamble'});
+    }else{
+      this.setState({winner:'you lost the gamble'});
+    }
+    console.log(ans);
+    this.balance=ans.balance;
   }
-
-  async getGamblesInfo(){
-    console.log();
+  async decideWinner(){
     let battleNumbers=await this.contract2.methods.getBattleNumbers(this.state.userLoggedIn).call();
-
-    let ans=[];
-    console.log("battles numbers"+battleNumbers.length);
-    if(this.isHaveRivel.status){
-      window.alert("no player to play with until ");
+    console.log('hello');
+    let ans=await this.contract2.methods.winner(Number(battleNumbers[battleNumbers.length-1])).call();
+    if (ans[0]==true){
+      this.transferToWinner(ans[1].username,ans[3].username);
+    }else if (ans[2]==true){
+      this.transferToWinner(ans[3].username,ans[1].username);
     }
-    for (let i=0;i<battleNumbers.length;i++){
-    let ans1=await this.contract2.methods.getGamblingBattle(Number(battleNumbers[i])).call();
-    ans.push(ans1);
-    }
+    let address=await this.contract2.methods.getUserAddressByUsername(this.state.userLoggedIn).call();
+    this.balance=await this.contract3.methods.getBalance(address).call();
   }
-
   renderBPlayerList(){
     this.setState({pickBPlayer:true});
   }
@@ -366,24 +337,8 @@ class App extends React.Component {
       console.log('login/register');
     return (
       <div className="App">
-        <button onClick={()=>{this.transferToWinner();}}>Transfer</button>
         <button onClick={()=>this.setState({loggedIn:this.state.loggedIn,storageValue:this.state.storageValue,register:true,login:false})}>Register</button>
         <button onClick={()=>this.setState({loggedIn:this.state.loggedIn,storageValue:this.state.storageValue,register:false,login:true})}>Login</button>
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <p>
-          {this.state.loggedIn}
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
-        <div>{this.state.balance}</div>
       </div>
     );
   }
@@ -398,49 +353,28 @@ class App extends React.Component {
         return (
       <div className="App">
         <Login login={this.login} back={this.mainPage}></Login>
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
       </div>
     );
   }
   if (this.state.loggedIn && !this.state.pickBPlayer){
     console.log('main menu');
     return(
-      <div>
+      <div className="App">
         <button onClick={()=>{this.renderBPlayerList()}}>Choose players for gambling</button>
         <br></br>
-        <button onClick={()=>{this.getGamblesInfo()}}>Gambles info</button>
-        <br></br>
         <button onClick={()=>{this.setState({loggedIn:false,register:false,login:false,userLoggedIn:''})}}>logout</button>
+        <h1>{this.state.winner}</h1>
+        <h2>{"your balance: "+this.balance}</h2>
       </div>
     );
   }
   if (this.state.pickBPlayer){
     return(
-      <div>
+      <div className="App">
         <button onClick={()=>this.setState({pickBPlayer:!this.state.pickBPlayer})}>Back to main menu</button>
         <BPlayerList confirm={this.createGamble}></BPlayerList>
       </div>
     );
-  }
-  if (this.state.showGamblingInfo){
-    /*
-    return(
-      <div>
-        <button onClick={()=>this.setState({gamblingInfo})}></button>
-
-      </div>
-    );
-    */
   }
   }
 }
