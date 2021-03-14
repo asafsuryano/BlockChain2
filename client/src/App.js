@@ -145,7 +145,7 @@ class BPlayerList extends React.Component{
   }
 }
 
-class PlayerInfo extends React.component{
+class PlayerInfo extends React.Component{
   constructor(props){
     super(props);
   }
@@ -172,6 +172,7 @@ class GamblingInfo extends React.Component{
         {this.props.info.map((element)=>(
           <PlayerInfo info={element}></PlayerInfo>
         ))}
+
         <p>{"The price payed for this gamble is "+this.props.price}</p>
         <p>{"You receive "+this.props.winRes}</p>
       </div>
@@ -237,6 +238,7 @@ class App extends React.Component {
     this.contract=null;
     this.contract2=null;
     this.contract3=null;
+    this.isHaveRivel=null;
     this.balance=0;
     this.register=this.register.bind(this);
     this.login=this.login.bind(this);
@@ -321,8 +323,9 @@ class App extends React.Component {
       await this.contract2.methods.addPlayerToUser(this.state.userLoggedIn,chosenPlayers[i].name)
       .send({from:userAddress,gas:'3000000',gasPrice:'0'});
     }
-    let ans=await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:userAddress,gas:'3000000',gasPrice:'0'});
-    if (ans.status==true){
+    this.isHaveRivel=await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:userAddress,gas:'3000000',gasPrice:'0'});
+ 
+    if (this.isHaveRivel.status==true){
       await this.contract2.methods.createBattle(this.state.userLoggedIn).send({from:userAddress,gas:'3000000'});
     }
     this.setState({loggedIn:true,pickBPlayer:false});
@@ -340,14 +343,16 @@ class App extends React.Component {
   async getGamblesInfo(){
     console.log();
     let battleNumbers=await this.contract2.methods.getBattleNumbers(this.state.userLoggedIn).call();
+
     let ans=[];
+    console.log("battles numbers"+battleNumbers.length);
+    if(this.isHaveRivel.status){
+      window.alert("no player to play with until ");
+    }
     for (let i=0;i<battleNumbers.length;i++){
-    ans1=await this.contract2.methods.getGamblingBattle(Number(battleNumbers[i])).call();
+    let ans1=await this.contract2.methods.getGamblingBattle(Number(battleNumbers[i])).call();
     ans.push(ans1);
     }
-    return(
-      <GamblingInfo
-    );
   }
 
   renderBPlayerList(){
@@ -428,12 +433,14 @@ class App extends React.Component {
     );
   }
   if (this.state.showGamblingInfo){
+    /*
     return(
       <div>
         <button onClick={()=>this.setState({gamblingInfo})}></button>
 
       </div>
     );
+    */
   }
   }
 }

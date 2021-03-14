@@ -36,7 +36,8 @@ contract NBA_gembller{
         uint scoreUserGamble1;
         uint scoreUserGamble2;
     }
-
+      
+      bool isSecondGambller;
       uint GamblingBattleNum;
       User [] public userWhoWantToGambller;
       uint  numberOfPlayers=2;
@@ -55,11 +56,10 @@ contract NBA_gembller{
     
 
 
-      constructor() public {    
+      constructor() public {
+
         GamblingBattleNum=1;
-        userWaits_0.valid=false;
-        userWaits_500.valid=false;
-        userWaits_1000.valid=false;
+        isSecondGambller=false;
         userWaits_0.initialPrice=0;
         userWaits_500.initialPrice=500;
         userWaits_1000.initialPrice=1000;
@@ -101,28 +101,28 @@ contract NBA_gembller{
       userGambles[_username].players.push(_player);
 
       }
-    function addUserGambling(string memory _username,uint _initialPrice) public  returns(bool)  {   
-         
-
+    function addUserGambling(string memory _username,uint _initialPrice) public  returns(bool status)  {   
           userGambles[_username].initialPrice=_initialPrice;
-          userGambles[_username].valid=true;
           User memory _user=usersMapping[_username];
           userGambles[_username].user=_user;
           userGambles[_username].gambleAmount=calculateGamblePriceWinner(_initialPrice, _username);       
 
           if(userGambles[_username].initialPrice==userWaits_0.initialPrice){
-               if (userWaits_0.valid==false){
+               if (isSecondGambller==false){
                 userWaits_0=userGambles[_user.username];
-               return false;
+               isSecondGambller=true;
+                return false;
                }    
           }else if(userGambles[_username].initialPrice==userWaits_500.initialPrice){
-            if (userWaits_500.valid==false){
+            if (isSecondGambller==false){
                userWaits_500=userGambles[_user.username];
+               isSecondGambller=true;
                return false;
             }
           }else{
-            if (userWaits_1000.valid==false){
+            if (isSecondGambller==false){
                userWaits_1000=userGambles[_user.username];
+               isSecondGambller=true;
                return false;
              }
           }
@@ -136,14 +136,14 @@ contract NBA_gembller{
       
         if ( gamblingBattles[GamblingBattleNum].userGamble1.initialPrice==0){
         gamblingBattles[GamblingBattleNum].userGamble2= userWaits_0;//get the usergamble2
-        userWaits_0.valid=false;
+        isSecondGambller=false;
         userNameToBattle[_username].push(GamblingBattleNum);
         userNameToBattle[userWaits_0.user.username].push(GamblingBattleNum);
         GamblingBattleNum+=1;
         
         }else if(gamblingBattles[GamblingBattleNum].userGamble1.initialPrice==500){
         gamblingBattles[GamblingBattleNum].userGamble2= userWaits_500;//get the usergamble2   
-        userWaits_0.valid=false;
+        isSecondGambller=false;
         userNameToBattle[_username].push(GamblingBattleNum);
         userNameToBattle[userWaits_500.user.username].push(GamblingBattleNum);
         GamblingBattleNum+=1;
@@ -151,7 +151,7 @@ contract NBA_gembller{
 
         }else{
           gamblingBattles[GamblingBattleNum].userGamble2= userWaits_1000;//get the usergamble2
-          userWaits_1000.valid=false;
+           isSecondGambller=false;
           userNameToBattle[_username].push(GamblingBattleNum);
           userNameToBattle[userWaits_1000.user.username].push(GamblingBattleNum);
           GamblingBattleNum+=1;
@@ -210,7 +210,6 @@ contract NBA_gembller{
 
        }
 
-
      function updateStatisticOfPlayer(string memory _playerName,
     uint _rebounds,uint _asists,uint _points ,uint _blocks,uint _steals) public {
      
@@ -256,5 +255,8 @@ contract NBA_gembller{
       function getUserAddressByUsername(string memory username) public view returns(address userAddress){
         return usersMapping[username].userAddress;
       }
+      
+     
+
 
 }
