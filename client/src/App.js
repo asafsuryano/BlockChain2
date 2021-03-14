@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import NBA_gembller from "./contracts/NBA_gembller.json";
+import DappToken from "./contracts/DappToken.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import PlayersInfo from "./resources/nba.json";
@@ -193,11 +194,13 @@ class Register extends React.Component{
 class App extends React.Component {
   constructor(props){
     super(props);
-    this.state={ loggedIn:false,storageValue: 0,register:false,login:false};
+    this.state={ loggedIn:false,storageValue: 0,register:false,login:false,balance:0};
     this.web3=null;
     this.accounts=null;
     this.contract=null;
     this.contract2=null;
+    this.contract3=null;
+    this.balance=0;
     this.register=this.register.bind(this);
     this.login=this.login.bind(this);
     this.createGamble=this.createGamble.bind(this);
@@ -219,6 +222,7 @@ class App extends React.Component {
         deployedNetwork && deployedNetwork.address,
       );
       this.contract2=await new web3.eth.Contract(NBA_gembller.abi,NBA_gembller.networks[networkId] && NBA_gembller.networks[networkId].address);
+      this.contract3=await new web3.eth.Contract(DappToken.abi,DappToken.networks[networkId] && DappToken.networks[networkId].address);
       this.contract=instance;
       this.accounts=accounts;
       this.web3=web3;
@@ -278,6 +282,16 @@ class App extends React.Component {
     await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:this.accounts[0],gas:'3000000',gasPrice:'0'});
     this.setState({loggedIn:true,pickBPlayer:false});
   }
+
+  async transferToWinner(){
+    await this.contract3.methods.addAddress().send({from:this.accounts[1]});
+    let ans3=await this.contract3.methods.transfer(this.accounts[1],600).send(
+      {from:this.accounts[0],gas:'3000000'});
+    let ans=await this.contract3.methods.getBalance(this.accounts[1]).call();
+    let ans2=await this.contract3.methods.getBalance(this.accounts[0]).call();
+    this.setState({balance:ans});
+  }
+
   async getGamblesInfo(){
     console.log();
     let ans=await this.contract2.methods.getGamblingBattle(this.state.userLoggedIn).call();
@@ -294,6 +308,7 @@ class App extends React.Component {
       console.log('login/register');
     return (
       <div className="App">
+        <button onClick={()=>{this.transferToWinner();}}>Transfer</button>
         <button onClick={()=>this.setState({loggedIn:this.state.loggedIn,storageValue:this.state.storageValue,register:true,login:false})}>Register</button>
         <button onClick={()=>this.setState({loggedIn:this.state.loggedIn,storageValue:this.state.storageValue,register:false,login:true})}>Login</button>
         <h1>Good to Go!</h1>
@@ -310,6 +325,7 @@ class App extends React.Component {
           {this.state.loggedIn}
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
+        <div>{this.state.balance}</div>
       </div>
     );
   }
