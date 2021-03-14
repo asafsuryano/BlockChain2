@@ -64,7 +64,7 @@ contract DappToken {
         return true;
     }
     
-    function getBalance(address _address) public view returns(uint){
+    function getBalance(address _address) public view returns(uint balance){
         return balanceOf[_address];
     }
 }

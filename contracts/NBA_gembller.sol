@@ -7,7 +7,7 @@ contract NBA_gembller{
         string firtsName;
         string username;
         string password;
-         //address userAddress;
+        address userAddress;
     }
     
  struct BPlayer{
@@ -43,8 +43,11 @@ contract NBA_gembller{
       mapping(string => UserGamble)  userGambles;
        mapping(string => BPlayer)  players;
       mapping(string => User) usersMapping;
+      mapping(address => User) usersAddress;
+
       mapping(uint => GamblingBattle) gamblingBattles;
       mapping(string => bool) userExists;
+      mapping(address => bool) userExistsWithAddress;
       mapping(string=>uint[]) userNameToBattle;
       UserGamble userWaits_0;
       UserGamble userWaits_500;
@@ -62,7 +65,15 @@ contract NBA_gembller{
         userWaits_500.initialPrice=500;
         userWaits_1000.initialPrice=1000;
       } 
-      
+       function register(string memory _firtsName,string  memory _username,string  memory _password,address  _userAddress) public  {
+        User memory _user=User(_firtsName,_username,_password,_userAddress);
+        require(!userExists[_user.username],"user allready exsist");
+        usersMapping[_username]=_user;
+        usersAddress[_userAddress]=_user;
+        userExists[_user.username] = true; 
+        userExistsWithAddress[_userAddress]=true; 
+        }
+
       //return true if the user exsist and the password is correct 
       function login(string memory _username,string memory _password) public view returns (bool)  {
          User memory _user=usersMapping[_username];
@@ -70,15 +81,13 @@ contract NBA_gembller{
          return userExists[_username];
          
         }
-       
-      function register(string memory firtsName,string  memory username,string  memory password) public  {
-        User memory _user=User(firtsName,username,password);
-        require(!userExists[_user.username],"user allready exsist");
-        usersMapping[username]=_user;
-        userExists[_user.username] = true;  
-        }
-     
 
+        function loginWithAddress(address _userAddress) public view returns (bool)  {
+         User memory _user=usersAddress[_userAddress];
+         return userExistsWithAddress[_userAddress];
+         
+        }
+          
     function createPlayer( string memory _playerName,
     uint _rebounds,uint _asists,uint _points ,uint _blocks,uint _steals) public {
       BPlayer memory _player=BPlayer(_playerName,_rebounds,_asists,_points,_blocks,_steals);
@@ -92,7 +101,7 @@ contract NBA_gembller{
       userGambles[_username].players.push(_player);
 
       }
-    function addUserGambling(string memory _username,uint _initialPrice) public  {        
+    function addUserGambling(string memory _username,uint _initialPrice) public  returns(bool)  {        
           userGambles[_username].initialPrice=_initialPrice;
           userGambles[_username].valid=true;
           User memory _user=usersMapping[_username];
@@ -102,25 +111,22 @@ contract NBA_gembller{
           if(userGambles[_username].initialPrice==userWaits_0.initialPrice){
                if (userWaits_0.valid==false){
                userWaits_0=userGambles[_user.username];
-          }else{
-             createBattle(_user.username);
-           }
-          
+               return false;
+               }    
+      
           }else if(userGambles[_username].initialPrice==userWaits_500.initialPrice){
             if (userWaits_500.valid==false){
                userWaits_500=userGambles[_user.username];
-          }else{
-             createBattle(_user.username);
-           }
-        
-
+               return false;
+            }
           }else{
             if (userWaits_1000.valid==false){
                userWaits_1000=userGambles[_user.username];
-          }else{
-             createBattle(_user.username);
+               return false;
+             }
           }
-        }
+
+        return true;
      }
     
       function createBattle(string memory userName)public  {    
