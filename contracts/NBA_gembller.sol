@@ -101,7 +101,7 @@ contract NBA_gembller{
 
       }
     event AddUserGambling(bool readyForBattle);
-    function addUserGambling(string memory _username,uint _initialPrice)   {   
+    function addUserGambling(string memory _username,uint _initialPrice) public   {   
           userGambles[_username].initialPrice=_initialPrice;
           User memory _user=usersMapping[_username];
           userGambles[_username].user=_user;

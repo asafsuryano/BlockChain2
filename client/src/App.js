@@ -292,7 +292,7 @@ class App extends React.Component {
     }
     this.isHaveRivel=await this.contract2.methods.addUserGambling(this.state.userLoggedIn,1000).send({from:userAddress,gas:'3000000',gasPrice:'0'});
  
-    if (this.isHaveRivel.status==true){
+    if (this.isHaveRivel.events.readyForBattle==true){
       await this.contract2.methods.createBattle(this.state.userLoggedIn).send({from:userAddress,gas:'5000000'});
       setTimeout(this.decideWinner,10000)
 
