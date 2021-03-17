@@ -57,7 +57,6 @@ contract NBA_gembller{
 
 
       constructor() public {
-
         GamblingBattleNum=1;
         isSecondGambller=false;
         userWaits_0.initialPrice=0;
@@ -101,7 +100,8 @@ contract NBA_gembller{
       userGambles[_username].players.push(_player);
 
       }
-    function addUserGambling(string memory _username,uint _initialPrice) public  returns(bool status)  {   
+    event AddUserGambling(bool readyForBattle);
+    function addUserGambling(string memory _username,uint _initialPrice)   {   
           userGambles[_username].initialPrice=_initialPrice;
           User memory _user=usersMapping[_username];
           userGambles[_username].user=_user;
@@ -110,24 +110,25 @@ contract NBA_gembller{
           if(userGambles[_username].initialPrice==userWaits_0.initialPrice){
                if (isSecondGambller==false){
                 userWaits_0=userGambles[_user.username];
-               isSecondGambller=true;
-                return false;
+                isSecondGambller=true;
+                emit AddUserGambling(false);
                }    
           }else if(userGambles[_username].initialPrice==userWaits_500.initialPrice){
             if (isSecondGambller==false){
                userWaits_500=userGambles[_user.username];
                isSecondGambller=true;
-               return false;
+                emit AddUserGambling(false);
             }
           }else{
             if (isSecondGambller==false){
                userWaits_1000=userGambles[_user.username];
                isSecondGambller=true;
-               return false;
+              emit AddUserGambling(false);
              }
           }
-
-        return true;
+          
+         if(isSecondGambller)
+          emit AddUserGambling(true);
      }
     
 
@@ -151,7 +152,7 @@ contract NBA_gembller{
 
         }else{
           gamblingBattles[GamblingBattleNum].userGamble2= userWaits_1000;//get the usergamble2
-           isSecondGambller=false;
+          isSecondGambller=false;
           userNameToBattle[_username].push(GamblingBattleNum);
           userNameToBattle[userWaits_1000.user.username].push(GamblingBattleNum);
           GamblingBattleNum+=1;
@@ -195,11 +196,12 @@ contract NBA_gembller{
       
 
 
-      function winner(uint battleNum) public  returns(bool,User memory,bool,User memory)
+      function winner(uint battleNum) public view  returns(bool,User memory,bool,User memory)
       {
-        GamblingBattle storage  battle = gamblingBattles[battleNum];
-         delete battle.userGamble1.players;
-         delete battle.userGamble2.players;
+         GamblingBattle memory battle=gamblingBattles[battleNum];
+       
+         //delete battle.userGamble1.players;
+         //delete battle.userGamble2.players;
          if(battle.scoreUserGamble1>battle.scoreUserGamble2){  
            return (true,battle.userGamble1.user,false,battle.userGamble2.user);
          }else if(battle.scoreUserGamble1< battle.scoreUserGamble2){
@@ -227,7 +229,7 @@ contract NBA_gembller{
 
 
    
-    //------just for test-----
+    //------just for test-----//
     
     function getPlayer(string  memory _playername) public view returns(BPlayer memory ){
      return players[_playername];
@@ -255,8 +257,4 @@ contract NBA_gembller{
       function getUserAddressByUsername(string memory username) public view returns(address userAddress){
         return usersMapping[username].userAddress;
       }
-      
-     
-
-
 }
